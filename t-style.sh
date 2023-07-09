@@ -7,10 +7,6 @@ readonly AUTHOR="Sivin Nguyen"
 readonly COLOR_URL="https://api.github.com/repos/termux/termux-styling/contents/app/src/main/assets/colors"
 readonly FONT_URL="https://api.github.com/repos/termux/termux-styling/contents/app/src/main/assets/fonts"
 
-## Variables
-#COLOR_MENU=()
-#FONT_MENU=()
-
 
 ## Banner
 banner() {
@@ -45,12 +41,49 @@ initialize() {
 
 
 ## Display Menu
-loadMenu() {
+mainMenu() {
+	banner
+
+	echo "[C] Change Color"
+	echo "[F] Change Font"
+	#echo "[B] Backup"
+	#echo "[R] Restore"
+	echo "[E] Exit"
+	echo ""
+
+	while true; do
+		read -rp "Enter your choice: " choice
+		case $choice in
+			c|C)
+				subMenu "${COLOR_MENU[@]}"
+				break
+				;;
+			f|F)
+				subMenu "${FONT_MENU[@]}"
+				break
+				;;
+			e|E)
+				exit 0
+				;;
+			*)
+				echo "Invalid choice. Please try again."
+				;;
+		esac
+	done
+
+	read -n1 -r -p "Press any key to continue..."
+}
+
+subMenu() {
+	banner
+
 	menu=("$@")
+	len=${#menu[@]}
+	len=$((len + 1))
 
 	for i in "${!menu[@]}"; do
 		item=$(echo "${menu[$i]}" | cut -d ',' -f 1 | sed -E 's/\.(properties|ttf)*$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g')
-		echo "$i is: $item"
+		printf "[%${#len}d] %s\n" $((i + 1)) "$item"
 	done
 }
 
@@ -58,15 +91,10 @@ loadMenu() {
 ## Main
 main() {
 	initialize
-	banner
+	mainMenu
 
 	# https://stackoverflow.com/a/69885656
-	loadMenu "${FONT_MENU[@]}"
-
-	#for i in "${!COLOR_MENU[@]}"; do
-	#	item=$(echo "${COLOR_MENU[$i]}" | cut -d ',' -f 1 | sed -E 's/\.(properties|ttf)*$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g')
-	#	echo "$i is: $item"
-	#done
+	#loadMenu "${FONT_MENU[@]}"
 }
 
 
