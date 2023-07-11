@@ -48,7 +48,7 @@ mainMenu() {
 	echo "[F] Change Font"
 	#echo "[B] Backup"
 	#echo "[R] Restore"
-	echo "[E] Exit"
+	echo "[Q] Quit"
 	echo ""
 
 	while true; do
@@ -62,7 +62,7 @@ mainMenu() {
 				subMenu "${FONT_MENU[@]}"
 				break
 				;;
-			e|E)
+			q|Q)
 				exit 0
 				;;
 			*)
@@ -77,14 +77,68 @@ mainMenu() {
 subMenu() {
 	banner
 
+	page_size=10
+	current_page=1
+
 	menu=("$@")
 	len=${#menu[@]}
-	len=$((len + 1))
+	dec=$((len + 1))
 
-	for i in "${!menu[@]}"; do
-		item=$(echo "${menu[$i]}" | cut -d ',' -f 1 | sed -E 's/\.(properties|ttf)*$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g')
-		printf "[%${#len}d] %s\n" $((i + 1)) "$item"
+	while true; do
+		banner
+		a=$(((current_page-1)*page_size))
+		b=$((current_page*page_size-1))
+
+		for i in $(seq $a $b); do
+			if [ $i -lt $len ]; then
+				item=$(echo "${menu[$i]}" | cut -d ',' -f 1 | sed -E 's/\.(properties|ttf)*$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g')
+				printf "[%${#dec}d] %s\n" $((i + 1)) "$item"
+			fi
+		done
+
+		echo ""
+		echo "(p) Previous page  (n) Next page  (m) Main menu  (q) Quit"
+		echo ""
+
+		read -rp "Enter your choice: " choice
+		case $choice in
+			[1-9]|[1-9][0-9]*)
+				index=$((choice-1))
+				if [ $index -lt $len ]; then
+                	echo "You selected: ${menu[$index]}"
+            	else
+                	echo "Invalid number. Please try again."
+            	fi
+            	read -n1 -r -p "Press any key to continue..."
+            	;;
+			p|P)
+				if [ $current_page -gt 1 ]; then
+					current_page=$((current_page-1))
+				fi
+				;;
+			n|N)
+				if [ $((current_page*page_size)) -lt $len ]; then
+					current_page=$((current_page+1))
+				fi
+				;;
+			m|M)
+				break
+				;;
+			q|Q)
+				exit 0
+				;;
+			*)
+				echo "Invalid choice. Please try again."
+				read -n1 -r -p "Press any key to continue..."
+				;;
+		esac
 	done
+
+	#for i in "${!menu[@]}"; do
+	#	item=$(echo "${menu[$i]}" | cut -d ',' -f 1 | sed -E 's/\.(properties|ttf)*$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g')
+	#	printf "[%${#dec}d] %s\n" $((i + 1)) "$item"
+	#done
+	return
 }
 
 
