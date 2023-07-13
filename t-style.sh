@@ -42,74 +42,76 @@ initialize() {
 
 ## Display Menu
 mainMenu() {
-	banner
-
-	echo "[C] Change Color"
-	echo "[F] Change Font"
-	#echo "[B] Backup"
-	#echo "[R] Restore"
-	echo "[Q] Quit"
-	echo ""
-
 	while true; do
+		banner
+
+		echo "[C] Change Color"
+		echo "[F] Change Font"
+		#echo "[B] Backup"
+		#echo "[R] Restore"
+		echo "[Q] Quit"
+		echo ""
+
 		read -rp "Enter your choice: " choice
 		case $choice in
 			c|C)
+				# https://stackoverflow.com/a/69885656
 				subMenu "${COLOR_MENU[@]}"
-				break
 				;;
 			f|F)
 				subMenu "${FONT_MENU[@]}"
-				break
 				;;
 			q|Q)
 				exit 0
 				;;
 			*)
-				echo "Invalid choice. Please try again."
+				read -n1 -r -p "Invalid choice. Press any key to try again..."
 				;;
 		esac
 	done
-
-	read -n1 -r -p "Press any key to continue..."
 }
 
 subMenu() {
 	banner
 
-	page_size=10
-	current_page=1
-
 	menu=("$@")
 	len=${#menu[@]}
+	page_size=10
+	num_page=$((($len + $page_size - 1) / $page_size))
 	dec=$((len + 1))
+	current_page=1
+
+	message="Press any key to try again..."
 
 	while true; do
 		banner
-		a=$(((current_page-1)*page_size))
-		b=$((current_page*page_size-1))
+		start_i=$(((current_page-1)*page_size))
+		end_i=$((current_page*page_size-1))
 
-		for i in $(seq $a $b); do
+		for i in $(seq $start_i $end_i); do
 			if [ $i -lt $len ]; then
 				item=$(echo "${menu[$i]}" | cut -d ',' -f 1 | sed -E 's/\.(properties|ttf)*$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g')
 				printf "[%${#dec}d] %s\n" $((i + 1)) "$item"
 			fi
 		done
+		echo "<<$current_page/$num_page>>"
 
 		echo ""
-		echo "(p) Previous page  (n) Next page  (m) Main menu  (q) Quit"
+		echo "(p) Previous page  (n) Next page"
+		echo "(m) Main menu  (q) Quit"
 		echo ""
 
 		read -rp "Enter your choice: " choice
 		case $choice in
 			[1-9]|[1-9][0-9]*)
 				index=$((choice-1))
-				if [ $index -lt $len ]; then
+				if [ $index -ge $start_i ] && [ $index -le $end_i ] && [ $index -lt $len ]; then
                 	echo "You selected: ${menu[$index]}"
+					message="Press any key to continue..."
             	else
-                	echo "Invalid number. Please try again."
+                	echo -n "Invalid number. "
             	fi
-            	read -n1 -r -p "Press any key to continue..."
+            	read -n1 -r -p "$message"
             	;;
 			p|P)
 				if [ $current_page -gt 1 ]; then
@@ -128,8 +130,8 @@ subMenu() {
 				exit 0
 				;;
 			*)
-				echo "Invalid choice. Please try again."
-				read -n1 -r -p "Press any key to continue..."
+				echo -n "Invalid choice. "
+				read -n1 -r -p "$message"
 				;;
 		esac
 	done
@@ -146,9 +148,6 @@ subMenu() {
 main() {
 	initialize
 	mainMenu
-
-	# https://stackoverflow.com/a/69885656
-	#loadMenu "${FONT_MENU[@]}"
 }
 
 
