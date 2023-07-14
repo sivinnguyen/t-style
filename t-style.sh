@@ -7,6 +7,9 @@ readonly AUTHOR="Sivin Nguyen"
 readonly COLOR_URL="https://api.github.com/repos/termux/termux-styling/contents/app/src/main/assets/colors"
 readonly FONT_URL="https://api.github.com/repos/termux/termux-styling/contents/app/src/main/assets/fonts"
 
+## Termux configuration directory
+readonly CONF_DIR="$HOME/.termux"
+
 
 ## Banner
 banner() {
@@ -40,6 +43,30 @@ initialize() {
 }
 
 
+## Download properties
+download() {
+	url=$1
+	output=""
+
+	# https://stackoverflow.com/a/965069/1813901
+	ext=$(echo "${url##*.}")
+	case $ext in
+		ttf)
+			output="$CONF_DIR/font.ttf"
+			;;
+		properties)
+			output="$CONF_DIR/colors.properties"
+			;;
+		*)
+			echo "Invalid property url"
+			exit 0
+			;;
+	esac
+	
+	curl $url -o $output
+}
+
+
 ## Display Menu
 mainMenu() {
 	while true; do
@@ -52,8 +79,8 @@ mainMenu() {
 		echo "[Q] Quit"
 		echo ""
 
-		read -rp "Enter your choice: " choice
-		case $choice in
+		read -rp "Select option: " option
+		case $option in
 			c|C)
 				# https://stackoverflow.com/a/69885656
 				subMenu "${COLOR_MENU[@]}"
@@ -65,7 +92,7 @@ mainMenu() {
 				exit 0
 				;;
 			*)
-				read -n1 -r -p "Invalid choice. Press any key to try again..."
+				read -n1 -r -p "Invalid option. Press any key to try again..."
 				;;
 		esac
 	done
@@ -101,12 +128,14 @@ subMenu() {
 		echo "(m) Main menu  (q) Quit"
 		echo ""
 
-		read -rp "Enter your choice: " choice
-		case $choice in
+		read -rp "Select option: " option
+		case $option in
 			[1-9]|[1-9][0-9]*)
-				index=$((choice-1))
+				index=$((option-1))
 				if [ $index -ge $start_i ] && [ $index -le $end_i ] && [ $index -lt $len ]; then
-                	echo "You selected: ${menu[$index]}"
+					url=$(echo ${menu[$index]} | cut -d ',' -f 2 )
+					download "$url"
+					termux-reload-settings
 					message="Press any key to continue..."
             	else
                 	echo -n "Invalid number. "
@@ -130,16 +159,12 @@ subMenu() {
 				exit 0
 				;;
 			*)
-				echo -n "Invalid choice. "
+				echo -n "Invalid option. "
 				read -n1 -r -p "$message"
 				;;
 		esac
 	done
 
-	#for i in "${!menu[@]}"; do
-	#	item=$(echo "${menu[$i]}" | cut -d ',' -f 1 | sed -E 's/\.(properties|ttf)*$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g')
-	#	printf "[%${#dec}d] %s\n" $((i + 1)) "$item"
-	#done
 	return
 }
 
