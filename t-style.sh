@@ -63,7 +63,45 @@ download() {
 			;;
 	esac
 	
-	curl $url -o $output
+	echo -n "Setting..."
+	curl -sf $url -o $output
+	echo " done."
+
+	# Set cursor color
+	if [[ $ext -eq "properties" ]]; then
+		setCursorColor
+	fi
+}
+
+
+## Change cursor color
+setCursorColor() {
+	path="$CONF_DIR/colors.properties"
+
+	# Chuẩn hóa định dạng của colors.properties
+	sed -i 's/\s*\(:\|=\)\s*/=/g' $path
+
+	foreground=$(grep '^foreground=' $path | cut -d "=" -f 2)
+
+	# Đọc dòng cursor= từ tệp colors.properties
+	cursor=$(grep '^cursor=' $path)
+	
+	# Kiểm tra xem cursor= đã được định nghĩa trong tệp hay không
+	if [[ -z $cursor ]]; then
+		# Nếu không, lấy giá trị màu sắc từ dòng foreground= và gán cho cursor=
+		cursor="cursor=$foreground"
+		# Thêm dòng cursor= mới vào cuối tệp colors.txt
+		echo "$cursor" >> $path
+	else
+		# Nếu có, kiểm tra xem giá trị sau cursor= có rỗng không
+		cursor_value=$(echo $cursor | cut -d "=" -f 2)
+		if [[ -z $cursor_value ]]; then
+			# Nếu rỗng, lấy giá trị màu sắc từ dòng foreground= và gán cho cursor=
+			cursor="cursor=$foreground"
+			# Thay thế dòng cursor= cũ bằng giá trị mới trong tệp colors.txt
+			sed -i "s/^cursor=.*/$cursor/" $path
+		fi
+	fi
 }
 
 
