@@ -7,6 +7,9 @@ readonly AUTHOR="Sivin Nguyen"
 readonly COLOR_URL="https://api.github.com/repos/termux/termux-styling/contents/app/src/main/assets/colors"
 readonly FONT_URL="https://api.github.com/repos/termux/termux-styling/contents/app/src/main/assets/fonts"
 
+declare -g COLOR_MENU=()
+declare -g FONT_MENU=()
+
 ## Termux configuration directory
 readonly CONF_DIR="$HOME/.termux"
 
@@ -31,15 +34,6 @@ getData() {
 
 	mapfile -t dataset < <(echo "$json" | grep -oP '(?<="name": ")[^"]*|(?<="download_url": ")[^"]*'| grep -E '\.(properties|ttf)$'| awk 'ORS=NR%2?",":" "')
 	echo "${dataset[@]}"
-}
-
-
-## Initialization
-initialize() {
-	echo -n "Initializing..."
-	declare -rg COLOR_MENU=($(getData "$COLOR_URL"))
-	declare -rg FONT_MENU=($(getData "$FONT_URL"))
-	echo "done."
 }
 
 
@@ -120,10 +114,20 @@ mainMenu() {
 		read -rp "Select option: " option
 		case $option in
 			c|C)
+				if [[ -z $COLOR_MENU ]]; then
+					echo -n "Getting resource..."
+					COLOR_MENU=($(getData "$COLOR_URL"))
+					echo " done."
+				fi
 				# https://stackoverflow.com/a/69885656
 				subMenu "${COLOR_MENU[@]}"
 				;;
 			f|F)
+				if [[ -z $FONT_MENU ]]; then
+					echo -n "Getting resource..."
+					FONT_MENU=($(getData "$FONT_URL"))
+					echo " done."
+				fi
 				subMenu "${FONT_MENU[@]}"
 				;;
 			q|Q)
@@ -209,7 +213,6 @@ subMenu() {
 
 ## Main
 main() {
-	initialize
 	mainMenu
 }
 
