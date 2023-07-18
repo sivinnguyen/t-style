@@ -106,6 +106,7 @@ mainMenu() {
 
 		echo "[C] Change Color"
 		echo "[F] Change Font"
+		echo "[U] Customize Cursor"
 		#echo "[B] Backup"
 		#echo "[R] Restore"
 		echo "[Q] Quit"
@@ -129,6 +130,9 @@ mainMenu() {
 					echo " done."
 				fi
 				subMenu "${FONT_MENU[@]}"
+				;;
+			u|U)
+				cursorMenu
 				;;
 			q|Q)
 				exit 0
@@ -205,6 +209,56 @@ subMenu() {
 				read -n1 -r -p "$message"
 				;;
 		esac
+	done
+
+	return
+}
+
+
+cursorMenu() {
+	while true; do
+		banner
+
+		shape=("block" "bar" "underline")
+
+		echo "[#] Enter your color as a hexadecimal value (eg. #FFFFFF)"
+		echo "[1] Change Cursor Shape to Block █"
+		echo "[2] Change Cursor Shape to Bar |"
+		echo "[3] Change Cursor Shape to Underline _"
+		echo "[100 - 200] Cursor blink rate. 0 for disable"
+
+		echo ""
+		echo "(m) Main menu  (q) Quit"
+		echo ""
+
+		read -rp "Enter value: " value
+		case $value in
+			# Hoặc dùng if để so sánh '\(#[A-Fa-f0-9]\{6\}\|#[A-Fa-f0-9]\{3\}\)'`
+			\#[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]|\#[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9])
+				echo -n "Cursor color changed. "
+				read -n1 -r -p "Press any key to continue..."
+				;;
+			0|1[0-9][0-9]|200)
+				echo -n "Blink rate changed. "
+				read -n1 -r -p "Press any key to continue..."
+				;;
+			1|2|3)
+				i=$((value - 1))
+				echo -n "Cursor shape changed to ${shape[$i]^}. "
+				read -n1 -r -p "Press any key to continue..."
+				;;
+			m|M)
+				break
+				;;
+			q|Q)
+				exit 0
+				;;
+			*)
+				echo -n "Invalid input. "
+				read -n1 -r -p "Press any key to try again..."
+				;;
+		esac
+
 	done
 
 	return
