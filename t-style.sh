@@ -68,7 +68,7 @@ download() {
 	echo " done."
 
 	# Set cursor color
-	if [[ $ext -eq "properties" ]]; then
+	if [[ $ext == "properties" ]]; then
 		setCursorColor
 	fi
 }
