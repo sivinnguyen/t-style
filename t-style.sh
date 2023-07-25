@@ -259,7 +259,7 @@ cursorMenu() {
 		echo "CHANGE CURSOR BLINK RATE"
 
 		echo "[0] Disable."
-		echo "[100 - 200] Blink rate."
+		echo "[100 - 2000] Blink rate."
 
 		echo ""
 		echo "(m) Main menu  (q) Quit"
