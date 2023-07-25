@@ -12,6 +12,7 @@ declare -g FONT_MENU=()
 
 ## Termux configuration directory
 readonly CONF_DIR="$HOME/.termux"
+readonly CONF_FILES=("colors.properties" "font.ttf" "termux.properties")
 
 
 ## Banner
@@ -95,6 +96,27 @@ setCursorColor() {
 			# Thay thế dòng cursor= cũ bằng giá trị mới trong tệp colors.txt
 			sed -i "s/^cursor=.*/$cursor/" $path
 		fi
+	fi
+}
+
+
+## Change properties' value
+setPropValue() {
+	path="$CONF_DIR/$1"
+	prop="$2"
+	value="$3"
+	
+	if [[ ! -f  $path ]]; then
+		echo "$prop=$value" >> $path
+		return
+	fi
+
+	str=$(grep "^${prop}" $path)
+	if [[ -z $str ]]; then
+		echo "$prop=$value" >> $path
+		
+	else
+		sed -i "s/^${prop}.*/$prop=$value/" $path
 	fi
 }
 
@@ -221,7 +243,7 @@ cursorMenu() {
 
 		shape=("block" "bar" "underline")
 
-		echo "[#] Enter your color as a hexadecimal value (eg. #FFFFFF)"
+		echo "[#] Enter your color as a hexadecimal value (eg. #FFFFFF). Only #, reset to Foreground color"
 		echo "[1] Change Cursor Shape to Block █"
 		echo "[2] Change Cursor Shape to Bar |"
 		echo "[3] Change Cursor Shape to Underline _"
@@ -234,16 +256,26 @@ cursorMenu() {
 		read -rp "Enter value: " value
 		case $value in
 			# Hoặc dùng if để so sánh '\(#[A-Fa-f0-9]\{6\}\|#[A-Fa-f0-9]\{3\}\)'`
-			\#[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]|\#[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9])
-				echo -n "Cursor color changed. "
+			\#[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]|\#)
+				setPropValue ${CONF_FILES[0]} "cursor" $value
+				termux-reload-settings
+				echo -n "Cursor color changed to $value. "
 				read -n1 -r -p "Press any key to continue..."
 				;;
 			0|1[0-9][0-9]|200)
-				echo -n "Blink rate changed. "
+				setPropValue ${CONF_FILES[2]} "terminal-cursor-blink-rate" $value
+				termux-reload-settings
+				if [[ $value -eq 0 ]]; then
+					echo -n "Blink rate disabled. "
+				else
+					echo -n "Blink rate changed to $value. "
+				fi
 				read -n1 -r -p "Press any key to continue..."
 				;;
 			1|2|3)
 				i=$((value - 1))
+				setPropValue ${CONF_FILES[2]} "terminal-cursor-style" ${shape[$i]}
+				termux-reload-settings
 				echo -n "Cursor shape changed to ${shape[$i]^}. "
 				read -n1 -r -p "Press any key to continue..."
 				;;
