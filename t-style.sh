@@ -274,7 +274,7 @@ cursorMenu() {
 				echo -n "Cursor color changed to $value. "
 				read -n1 -r -p "Press any key to continue..."
 				;;
-			0|1[0-9][0-9]|200)
+			0|[1-9][0-9][0-9]|1[0-9][0-9][0-9]|2000)
 				setPropValue ${CONF_FILES[2]} "terminal-cursor-blink-rate" $value
 				termux-reload-settings
 				if [[ $value -eq 0 ]]; then
