@@ -243,11 +243,23 @@ cursorMenu() {
 
 		shape=("block" "bar" "underline")
 
-		echo "[#] Enter your color as a hexadecimal value (eg. #FFFFFF). Only #, reset to Foreground color"
-		echo "[1] Change Cursor Shape to Block █"
-		echo "[2] Change Cursor Shape to Bar |"
-		echo "[3] Change Cursor Shape to Underline _"
-		echo "[100 - 200] Cursor blink rate. 0 for disable"
+		echo "CHANGE CURSOR COLOR"
+
+		echo "[#] Reset to foreground color."
+		echo "[#hex] Hexadecimal value (eg. #FFFFFF)."
+		echo ""
+
+		echo "CHANGE CURSOR SHAPE (NEED RESTART)"
+
+		echo "[1] Block █"
+		echo "[2] Bar |"
+		echo "[3] Underline _"
+		echo ""
+
+		echo "CHANGE CURSOR BLINK RATE"
+
+		echo "[0] Disable."
+		echo "[100 - 200] Blink rate."
 
 		echo ""
 		echo "(m) Main menu  (q) Quit"
@@ -275,7 +287,6 @@ cursorMenu() {
 			1|2|3)
 				i=$((value - 1))
 				setPropValue ${CONF_FILES[2]} "terminal-cursor-style" ${shape[$i]}
-				termux-reload-settings
 				echo -n "Cursor shape changed to ${shape[$i]^}. "
 				read -n1 -r -p "Press any key to continue..."
 				;;
