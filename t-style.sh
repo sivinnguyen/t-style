@@ -64,37 +64,32 @@ download() {
 
 	# Set cursor color
 	if [[ $ext == "properties" ]]; then
-		setCursorColor
+		standardizeFile $output
 	fi
 }
 
+## Standardize configuration file
+standardizeFile() {
+	sed -i 's/\s*\(:\|=\)\s*/=/g' $1
+}
 
-## Change cursor color
-setCursorColor() {
-	path="$CONF_DIR/colors.properties"
 
-	# Chuẩn hóa định dạng của colors.properties
-	sed -i 's/\s*\(:\|=\)\s*/=/g' $path
+## Get Foreground color
+getForegroundColor() {
+	path="$CONF_DIR/${CONF_FILES[0]}"
+	standardizeFile $path
+	echo $(grep '^foreground=' $path | cut -d "=" -f 2)
+}
 
-	foreground=$(grep '^foreground=' $path | cut -d "=" -f 2)
 
-	# Đọc dòng cursor= từ tệp colors.properties
-	cursor=$(grep '^cursor=' $path)
+## Set cursor to default color
+setDefaultCursorColor() {
+	path="$CONF_DIR/${CONF_FILES[0]}"
 	
-	# Kiểm tra xem cursor= đã được định nghĩa trong tệp hay không
-	if [[ -z $cursor ]]; then
-		# Nếu không, lấy giá trị màu sắc từ dòng foreground= và gán cho cursor=
-		cursor="cursor=$foreground"
-		# Thêm dòng cursor= mới vào cuối tệp colors.txt
-		echo "$cursor" >> $path
-	else
-		# Nếu có, kiểm tra xem giá trị sau cursor= có rỗng không
-		cursor_value=$(echo $cursor | cut -d "=" -f 2)
-		if [[ -z $cursor_value ]]; then
-			# Nếu rỗng, lấy giá trị màu sắc từ dòng foreground= và gán cho cursor=
-			cursor="cursor=$foreground"
-			# Thay thế dòng cursor= cũ bằng giá trị mới trong tệp colors.txt
-			sed -i "s/^cursor=.*/$cursor/" $path
+	if [[ -f $path ]]; then
+		foreground=($(getForegroundColor))
+		if [[ -n $foreground ]]; then
+			setPropValue ${CONF_FILES[0]} "cursor" $foreground
 		fi
 	fi
 }
@@ -245,7 +240,7 @@ cursorMenu() {
 
 		echo "CHANGE CURSOR COLOR"
 
-		echo "[#] Reset to foreground color."
+		echo "[#] Reset to default color."
 		echo "[#hex] Hexadecimal value (eg. #FFFFFF)."
 		echo ""
 
@@ -267,8 +262,14 @@ cursorMenu() {
 
 		read -rp "Enter value: " value
 		case $value in
+			\#)
+				setDefaultCursorColor
+				termux-reload-settings
+				echo -n "Cursor color reset to default color. "
+				read -n1 -r -p "Press any key to continue..."
+				;;
 			# Hoặc dùng if để so sánh '\(#[A-Fa-f0-9]\{6\}\|#[A-Fa-f0-9]\{3\}\)'`
-			\#[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]|\#)
+			\#[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9])
 				setPropValue ${CONF_FILES[0]} "cursor" $value
 				termux-reload-settings
 				echo -n "Cursor color changed to $value. "
