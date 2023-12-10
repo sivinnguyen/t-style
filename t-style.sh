@@ -29,6 +29,17 @@ banner() {
 	echo -e "By: ${AUTHOR}\n"
 }
 
+
+## Title
+title() {
+	title=$1
+	echo "===================="
+	echo "${title}"
+	echo -e "====================\n"
+	
+}
+
+
 ## Get data from Github repo
 getData() {
 	json=$(curl -sL -H "X-GitHub-Api-Version:2022-11-28" -H "Accept: application/vnd.github.v3+json" $1)
@@ -138,7 +149,7 @@ mainMenu() {
 					echo " done."
 				fi
 				# https://stackoverflow.com/a/69885656
-				subMenu "${COLOR_MENU[@]}"
+				subMenu "${COLOR_MENU[@]}" "CHANGE COLOR"
 				;;
 			f|F)
 				if [[ -z $FONT_MENU ]]; then
@@ -146,7 +157,7 @@ mainMenu() {
 					FONT_MENU=($(getData "$FONT_URL"))
 					echo " done."
 				fi
-				subMenu "${FONT_MENU[@]}"
+				subMenu "${FONT_MENU[@]}" "CHANGE FONT"
 				;;
 			u|U)
 				cursorMenu
@@ -162,10 +173,8 @@ mainMenu() {
 }
 
 subMenu() {
-	banner
-
 	menu=("$@")
-	len=${#menu[@]}
+	len=$(( ${#menu[@]} - 1 ))
 	page_size=10
 	num_page=$((($len + $page_size - 1) / $page_size))
 	dec=$((len + 1))
@@ -175,6 +184,8 @@ subMenu() {
 
 	while true; do
 		banner
+		title "${menu[$len]}"
+
 		start_i=$(((current_page-1)*page_size))
 		end_i=$((current_page*page_size-1))
 
@@ -235,6 +246,8 @@ subMenu() {
 cursorMenu() {
 	while true; do
 		banner
+
+		title "CUSTOMIZE CURSOR"
 
 		shape=("block" "bar" "underline")
 
