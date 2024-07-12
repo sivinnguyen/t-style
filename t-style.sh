@@ -2,7 +2,7 @@
 
 ## Author : Sivin
 readonly AUTHOR="Sivin Nguyen"
-##readonly VERSION="v0.3.0"
+readonly VERSION="v0.3.0"
 
 ## Official Termux:Styling repo URLs
 readonly COLOR_URL="https://api.github.com/repos/termux/termux-styling/contents/app/src/main/assets/colors"
@@ -27,7 +27,7 @@ banner() {
                   |__/        "
 
 	echo -e "${banner}"
-	##echo -e "Version: ${VERSION}"
+	echo -e "Version: ${VERSION}"
 	echo -e "By: ${AUTHOR}\n"
 }
 
@@ -78,6 +78,10 @@ download() {
 	# Set cursor color
 	if [[ $ext == "properties" ]]; then
 		standardizeFile $output
+		foreground=($(getForegroundColor))
+		if [[ -n $foreground ]]; then
+			setPropValue ${CONF_FILES[0]} "cursor" $foreground
+		fi
 	fi
 }
 
