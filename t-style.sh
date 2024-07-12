@@ -2,7 +2,7 @@
 
 ## Author : Sivin
 readonly AUTHOR="Sivin Nguyen"
-readonly VERSION="v0.3.0"
+readonly VERSION="v0.3.1"
 
 ## Official Termux:Styling repo URLs
 readonly COLOR_URL="https://api.github.com/repos/termux/termux-styling/contents/app/src/main/assets/colors"
@@ -51,40 +51,6 @@ getData() {
 }
 
 
-## Download properties
-download() {
-	url=$1
-	output=""
-
-	# https://stackoverflow.com/a/965069/1813901
-	ext=$(echo "${url##*.}")
-	case $ext in
-		ttf)
-			output="$CONF_DIR/font.ttf"
-			;;
-		properties)
-			output="$CONF_DIR/colors.properties"
-			;;
-		*)
-			echo "Invalid property url"
-			exit 0
-			;;
-	esac
-	
-	echo -n "Setting..."
-	curl -sf $url -o $output
-	echo " done."
-
-	# Set cursor color
-	if [[ $ext == "properties" ]]; then
-		standardizeFile $output
-		foreground=($(getForegroundColor))
-		if [[ -n $foreground ]]; then
-			setPropValue ${CONF_FILES[0]} "cursor" $foreground
-		fi
-	fi
-}
-
 ## Standardize configuration file
 standardizeFile() {
 	sed -i 's/\s*\(:\|=\)\s*/=/g' $1
@@ -129,6 +95,37 @@ setPropValue() {
 		
 	else
 		sed -i "s/^${prop}.*/$prop=$value/" $path
+	fi
+}
+
+
+## Download properties
+download() {
+	url=$1
+	output=""
+
+	# https://stackoverflow.com/a/965069/1813901
+	ext=$(echo "${url##*.}")
+	case $ext in
+		ttf)
+			output="$CONF_DIR/font.ttf"
+			;;
+		properties)
+			output="$CONF_DIR/colors.properties"
+			;;
+		*)
+			echo "Invalid property url"
+			exit 0
+			;;
+	esac
+	
+	echo -n "Setting..."
+	curl -sf $url -o $output
+	echo " done."
+
+	# Set cursor color
+	if [[ $ext == "properties" ]]; then
+		setDefaultCursorColor
 	fi
 }
 
